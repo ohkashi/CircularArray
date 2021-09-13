@@ -2,7 +2,7 @@
 Double Buffered Circular Array
 
 ## Example
-~~~cpp
+```cpp
 #include "CircularArray.h"
 
 using namespace std;
@@ -15,4 +15,4 @@ int main()
         arTest.Add(i % 10);
     cout << arTest.GetCount() << " " << arTest.GetTail() << endl;
 }
-~~~
+```
