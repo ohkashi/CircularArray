@@ -1,6 +1,8 @@
 # CircularArray
 Double Buffered Circular Array
 
+[![Licence](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
+
 ## Example
 ```cpp
 #include "CircularArray.h"
