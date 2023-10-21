@@ -1,4 +1,13 @@
+/*
+* 
+* Double Buffered Continuous Circular Array
+* Copyright (c) 2021 https://github.com/ohkashi/CircularArray
+* MIT License
+*
+*/
+
 #pragma once
+#include <atomic>
 
 template <typename T>
 class CircularArray {
@@ -55,6 +64,7 @@ public:
 	T& GetAt(int nIndex) { return m_pArray[m_startPos + nIndex]; }
 	const T& GetAt(int nIndex) const { return m_pArray[m_startPos + nIndex]; }
 	int GetCount() const { return m_index; }
+	int GetSize() const { return m_length; }
 	bool IsEmpty() const { return !m_index; }
 	T* GetData() { return &m_pArray[m_startPos]; }
 	T& GetTail() { return m_pArray[m_buffPos - 1]; }
@@ -79,11 +89,33 @@ public:
 		} else
 			++m_index;
 		m_pArray[index] = newElement;
-		return m_index - 1;
+		index = m_index - 1;
+		return index;
+	}
+
+	int AddSync(const T& newElement) {
+		int index = m_index;
+		while (m_lock.test_and_set(std::memory_order_acquire)) {}
+		if (++m_buffPos > m_length) {
+			index = m_length + m_startPos++;
+			if (m_buffPos >= m_buffSize) {
+				m_buffPos = m_length;
+				m_startPos = 0;
+				index = m_buffPos - 1;
+				m_pArray[m_startPos] = m_pArray[m_buffPos];
+			} else
+				m_pArray[m_startPos - 1] = newElement;
+		} else
+			++m_index;
+		m_pArray[index] = newElement;
+		index = m_index - 1;
+		m_lock.clear(std::memory_order_release);
+		return index;
 	}
 
 private:
 	T*		m_pArray;
 	int		m_index, m_length, m_buffSize;
 	int		m_startPos, m_buffPos;
+	std::atomic_flag	m_lock = ATOMIC_FLAG_INIT;
 };
